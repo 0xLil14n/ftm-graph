@@ -1,0 +1,8 @@
+{
+  "sepolia": {
+    "FuckTicketmaster": {
+      "address": "0xeB7e6ca25CFdd3F75101F2cAaefAA9fbb753195C",
+      "startBlock": 3563974
+    }
+  }
+}
