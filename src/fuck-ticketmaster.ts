@@ -1,210 +1,96 @@
 import {
-  ApprovalForAll as ApprovalForAllEvent,
-  ERC20PaymentReleased as ERC20PaymentReleasedEvent,
-  OwnershipTransferred as OwnershipTransferredEvent,
-  PayeeAdded as PayeeAddedEvent,
-  PaymentReceived as PaymentReceivedEvent,
-  PaymentReleased as PaymentReleasedEvent,
+  FuckTicketmaster,
   RoyaltyDisbursed as RoyaltyDisbursedEvent,
   TicketResold as TicketResoldEvent,
   TicketSold as TicketSoldEvent,
-  TransferBatch as TransferBatchEvent,
-  TransferSingle as TransferSingleEvent,
-  URI as URIEvent
-} from "../generated/FuckTicketmaster/FuckTicketmaster"
+  TokenListedForSale as TokenListedForSaleEvent,
+} from '../generated/FuckTicketmaster/FuckTicketmaster';
 import {
-  ApprovalForAll,
-  ERC20PaymentReleased,
-  OwnershipTransferred,
-  PayeeAdded,
-  PaymentReceived,
-  PaymentReleased,
+  Listing,
   RoyaltyDisbursed,
+  Ticket,
+  TicketOption,
   TicketResold,
   TicketSold,
-  TransferBatch,
-  TransferSingle,
-  URI
-} from "../generated/schema"
-
-export function handleApprovalForAll(event: ApprovalForAllEvent): void {
-  let entity = new ApprovalForAll(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.account = event.params.account
-  entity.operator = event.params.operator
-  entity.approved = event.params.approved
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleERC20PaymentReleased(
-  event: ERC20PaymentReleasedEvent
-): void {
-  let entity = new ERC20PaymentReleased(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.token = event.params.token
-  entity.to = event.params.to
-  entity.amount = event.params.amount
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleOwnershipTransferred(
-  event: OwnershipTransferredEvent
-): void {
-  let entity = new OwnershipTransferred(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.previousOwner = event.params.previousOwner
-  entity.newOwner = event.params.newOwner
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handlePayeeAdded(event: PayeeAddedEvent): void {
-  let entity = new PayeeAdded(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.account = event.params.account
-  entity.shares = event.params.shares
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handlePaymentReceived(event: PaymentReceivedEvent): void {
-  let entity = new PaymentReceived(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.from = event.params.from
-  entity.amount = event.params.amount
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handlePaymentReleased(event: PaymentReleasedEvent): void {
-  let entity = new PaymentReleased(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.to = event.params.to
-  entity.amount = event.params.amount
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
+  User,
+} from '../generated/schema';
+import { log } from '@graphprotocol/graph-ts';
 
 export function handleRoyaltyDisbursed(event: RoyaltyDisbursedEvent): void {
   let entity = new RoyaltyDisbursed(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.owner = event.params.owner
-  entity.tokenId = event.params.tokenId
-  entity.profit = event.params.profit
+  );
+  entity.owner = event.params.owner;
+  entity.tokenId = event.params.tokenId;
+  entity.profit = event.params.profit;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
+  entity.save();
 }
 
 export function handleTicketResold(event: TicketResoldEvent): void {
+  let ticket = TicketOption.load(event.params.tokenId.toString());
+  if (!ticket) {
+    ticket = new TicketOption(event.params.tokenId.toString());
+  }
+  ticket.owner = event.params.to.toHexString();
+  ticket.quantity = event.params.amount;
+  let contract = FuckTicketmaster.bind(event.address);
+
   let entity = new TicketResold(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.from = event.params.from
-  entity.to = event.params.to
-  entity.tokenId = event.params.tokenId
+  );
+  entity.from = event.params.from;
+  entity.to = event.params.to;
+  entity.tokenId = event.params.tokenId;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
+  entity.save();
 }
 
 export function handleTicketSold(event: TicketSoldEvent): void {
-  let entity = new TicketSold(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.owner = event.params.owner
-  entity.tokenId = event.params.tokenId
-  entity.ticketId = event.params.ticketId
-  entity.quantity = event.params.quantity
+  log.error('Event {}', [event.params.owner.toHexString()]);
+  let user = User.load(event.params.owner.toHexString());
+  if (!user) {
+    user = new User(event.params.owner.toHexString());
+    user.tickets = [];
+  }
+  let contract = FuckTicketmaster.bind(event.address);
+  const id = user.id
+    .toString()
+    .concat('-')
+    .concat(event.params.tokenId.toString())
+    .concat('-ga');
+  const ticket = new Ticket(id);
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
+  ticket.ticketId = event.params.tokenId;
+  ticket.quantity = event.params.quantity;
+  ticket.save();
+  let tickets = user.tickets;
+  tickets.push(ticket.id);
+  user.tickets = tickets;
+  user.save();
 }
 
-export function handleTransferBatch(event: TransferBatchEvent): void {
-  let entity = new TransferBatch(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.operator = event.params.operator
-  entity.from = event.params.from
-  entity.to = event.params.to
-  entity.ids = event.params.ids
-  entity.values = event.params.values
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleTransferSingle(event: TransferSingleEvent): void {
-  let entity = new TransferSingle(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.operator = event.params.operator
-  entity.from = event.params.from
-  entity.to = event.params.to
-  entity.FuckTicketmaster_id = event.params.id
-  entity.value = event.params.value
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleURI(event: URIEvent): void {
-  let entity = new URI(event.transaction.hash.concatI32(event.logIndex.toI32()))
-  entity.value = event.params.value
-  entity.FuckTicketmaster_id = event.params.id
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
+export function handleTokenListedForSale(event: TokenListedForSaleEvent): void {
+  const id = `${event.params.owner.toHexString().slice(0, 5)}-${
+    event.params.tokenId
+  }-${event.block.hash.slice(0, 5)}`;
+  let listing = new Listing(id);
+  listing.priceInWei = event.params.price;
+  let user = User.load(event.params.owner.toHexString());
+  if (!user) {
+    throw new Error('user does not exist');
+    return;
+  }
+  listing.listedBy = user.id;
+  listing.supplyLeft = event.params.amount;
+  listing.ticketId = event.params.tokenId;
+  listing.save();
 }

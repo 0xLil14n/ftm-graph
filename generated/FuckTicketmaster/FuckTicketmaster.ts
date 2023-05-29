@@ -200,6 +200,10 @@ export class TicketResold__Params {
   get tokenId(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
+
+  get amount(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
 }
 
 export class TicketSold extends ethereum.Event {
@@ -228,6 +232,36 @@ export class TicketSold__Params {
   }
 
   get quantity(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+}
+
+export class TokenListedForSale extends ethereum.Event {
+  get params(): TokenListedForSale__Params {
+    return new TokenListedForSale__Params(this);
+  }
+}
+
+export class TokenListedForSale__Params {
+  _event: TokenListedForSale;
+
+  constructor(event: TokenListedForSale) {
+    this._event = event;
+  }
+
+  get owner(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get tokenId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get price(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get amount(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 }

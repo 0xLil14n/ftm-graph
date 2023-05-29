@@ -1,12 +1,12 @@
 specVersion: 0.0.5
 schema:
-  file: ./schema.graphql
+  file: schema.graphql
 dataSources:
   - kind: ethereum
     name: FuckTicketmaster
     network: sepolia
     source:
-      address: '0x3eEe9c05b10FE7b9339784082a4C42d4575bA5e2'
+      address: "0x3eEe9c05b10FE7b9339784082a4C42d4575bA5e2"
       abi: FuckTicketmaster
       startBlock: 3563974
     mapping:
@@ -21,7 +21,7 @@ dataSources:
         - TicketOption
       abis:
         - name: FuckTicketmaster
-          file: ./abis/FuckTicketmaster.json
+          file: FuckTicketmaster/abis/FuckTicketmaster.json
       eventHandlers:
         - event: RoyaltyDisbursed(indexed address,uint256,uint256)
           handler: handleRoyaltyDisbursed
@@ -31,4 +31,4 @@ dataSources:
           handler: handleTicketSold
         - event: TokenListedForSale(indexed address,indexed uint256,uint256,uint256)
           handler: handleTokenListedForSale
-      file: ./src/fuck-ticketmaster.ts
+      file: FuckTicketmaster/FuckTicketmaster.wasm
