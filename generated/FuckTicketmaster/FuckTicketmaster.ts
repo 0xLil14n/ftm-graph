@@ -176,6 +176,48 @@ export class RoyaltyDisbursed__Params {
   }
 }
 
+export class TicketCreated extends ethereum.Event {
+  get params(): TicketCreated__Params {
+    return new TicketCreated__Params(this);
+  }
+}
+
+export class TicketCreated__Params {
+  _event: TicketCreated;
+
+  constructor(event: TicketCreated) {
+    this._event = event;
+  }
+
+  get ticketId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get owner(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get ticketSupply(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get priceInWei(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get eventName(): string {
+    return this._event.parameters[4].value.toString();
+  }
+
+  get date(): string {
+    return this._event.parameters[5].value.toString();
+  }
+
+  get venueName(): string {
+    return this._event.parameters[6].value.toString();
+  }
+}
+
 export class TicketResold extends ethereum.Event {
   get params(): TicketResold__Params {
     return new TicketResold__Params(this);
@@ -223,16 +265,12 @@ export class TicketSold__Params {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get tokenId(): BigInt {
+  get ticketId(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get ticketId(): Bytes {
-    return this._event.parameters[2].value.toBytes();
-  }
-
   get quantity(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
+    return this._event.parameters[2].value.toBigInt();
   }
 }
 
@@ -456,6 +494,27 @@ export class FuckTicketmaster extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigIntArray());
   }
 
+  eventOwners(param0: BigInt): Address {
+    let result = super.call("eventOwners", "eventOwners(uint256):(address)", [
+      ethereum.Value.fromUnsignedBigInt(param0)
+    ]);
+
+    return result[0].toAddress();
+  }
+
+  try_eventOwners(param0: BigInt): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "eventOwners",
+      "eventOwners(uint256):(address)",
+      [ethereum.Value.fromUnsignedBigInt(param0)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   exists(id: BigInt): boolean {
     let result = super.call("exists", "exists(uint256):(bool)", [
       ethereum.Value.fromUnsignedBigInt(id)
@@ -505,6 +564,25 @@ export class FuckTicketmaster extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
+  maxSupply(param0: BigInt): BigInt {
+    let result = super.call("maxSupply", "maxSupply(uint256):(uint256)", [
+      ethereum.Value.fromUnsignedBigInt(param0)
+    ]);
+
+    return result[0].toBigInt();
+  }
+
+  try_maxSupply(param0: BigInt): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("maxSupply", "maxSupply(uint256):(uint256)", [
+      ethereum.Value.fromUnsignedBigInt(param0)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   numTokensForSale(param0: Address, param1: BigInt): BigInt {
@@ -716,6 +794,61 @@ export class FuckTicketmaster extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
+  tokenListPrices(param0: BigInt): BigInt {
+    let result = super.call(
+      "tokenListPrices",
+      "tokenListPrices(uint256):(uint256)",
+      [ethereum.Value.fromUnsignedBigInt(param0)]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_tokenListPrices(param0: BigInt): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "tokenListPrices",
+      "tokenListPrices(uint256):(uint256)",
+      [ethereum.Value.fromUnsignedBigInt(param0)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  tokenResalePrices(param0: Address, param1: BigInt): BigInt {
+    let result = super.call(
+      "tokenResalePrices",
+      "tokenResalePrices(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(param0),
+        ethereum.Value.fromUnsignedBigInt(param1)
+      ]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_tokenResalePrices(
+    param0: Address,
+    param1: BigInt
+  ): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "tokenResalePrices",
+      "tokenResalePrices(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(param0),
+        ethereum.Value.fromUnsignedBigInt(param1)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   totalReleased(token: Address): BigInt {
     let result = super.call(
       "totalReleased",
@@ -794,17 +927,17 @@ export class FuckTicketmaster extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  uri(_id: BigInt): string {
+  uri(param0: BigInt): string {
     let result = super.call("uri", "uri(uint256):(string)", [
-      ethereum.Value.fromUnsignedBigInt(_id)
+      ethereum.Value.fromUnsignedBigInt(param0)
     ]);
 
     return result[0].toString();
   }
 
-  try_uri(_id: BigInt): ethereum.CallResult<string> {
+  try_uri(param0: BigInt): ethereum.CallResult<string> {
     let result = super.tryCall("uri", "uri(uint256):(string)", [
-      ethereum.Value.fromUnsignedBigInt(_id)
+      ethereum.Value.fromUnsignedBigInt(param0)
     ]);
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -813,20 +946,20 @@ export class FuckTicketmaster extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toString());
   }
 
-  uuidToTokenId(param0: string): BigInt {
+  uuidToTicketId(param0: string): BigInt {
     let result = super.call(
-      "uuidToTokenId",
-      "uuidToTokenId(string):(uint256)",
+      "uuidToTicketId",
+      "uuidToTicketId(string):(uint256)",
       [ethereum.Value.fromString(param0)]
     );
 
     return result[0].toBigInt();
   }
 
-  try_uuidToTokenId(param0: string): ethereum.CallResult<BigInt> {
+  try_uuidToTicketId(param0: string): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
-      "uuidToTokenId",
-      "uuidToTokenId(string):(uint256)",
+      "uuidToTicketId",
+      "uuidToTicketId(string):(uint256)",
       [ethereum.Value.fromString(param0)]
     );
     if (result.reverted) {
@@ -871,40 +1004,6 @@ export class ConstructorCall__Outputs {
   }
 }
 
-export class AddUuidCall extends ethereum.Call {
-  get inputs(): AddUuidCall__Inputs {
-    return new AddUuidCall__Inputs(this);
-  }
-
-  get outputs(): AddUuidCall__Outputs {
-    return new AddUuidCall__Outputs(this);
-  }
-}
-
-export class AddUuidCall__Inputs {
-  _call: AddUuidCall;
-
-  constructor(call: AddUuidCall) {
-    this._call = call;
-  }
-
-  get uuid(): string {
-    return this._call.inputValues[0].value.toString();
-  }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-}
-
-export class AddUuidCall__Outputs {
-  _call: AddUuidCall;
-
-  constructor(call: AddUuidCall) {
-    this._call = call;
-  }
-}
-
 export class BuyResoldTokenCall extends ethereum.Call {
   get inputs(): BuyResoldTokenCall__Inputs {
     return new BuyResoldTokenCall__Inputs(this);
@@ -926,7 +1025,7 @@ export class BuyResoldTokenCall__Inputs {
     return this._call.inputValues[0].value.toAddress();
   }
 
-  get tokenId(): BigInt {
+  get ticketId(): BigInt {
     return this._call.inputValues[1].value.toBigInt();
   }
 
@@ -939,6 +1038,56 @@ export class BuyResoldTokenCall__Outputs {
   _call: BuyResoldTokenCall;
 
   constructor(call: BuyResoldTokenCall) {
+    this._call = call;
+  }
+}
+
+export class CreateTicketCall extends ethereum.Call {
+  get inputs(): CreateTicketCall__Inputs {
+    return new CreateTicketCall__Inputs(this);
+  }
+
+  get outputs(): CreateTicketCall__Outputs {
+    return new CreateTicketCall__Outputs(this);
+  }
+}
+
+export class CreateTicketCall__Inputs {
+  _call: CreateTicketCall;
+
+  constructor(call: CreateTicketCall) {
+    this._call = call;
+  }
+
+  get ticketId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get ticketSupply(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get priceInWei(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+
+  get eventName(): string {
+    return this._call.inputValues[3].value.toString();
+  }
+
+  get date(): string {
+    return this._call.inputValues[4].value.toString();
+  }
+
+  get venueName(): string {
+    return this._call.inputValues[5].value.toString();
+  }
+}
+
+export class CreateTicketCall__Outputs {
+  _call: CreateTicketCall;
+
+  constructor(call: CreateTicketCall) {
     this._call = call;
   }
 }
@@ -1002,8 +1151,8 @@ export class PublicMintCall__Inputs {
     this._call = call;
   }
 
-  get uuid(): string {
-    return this._call.inputValues[0].value.toString();
+  get ticketId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
   }
 
   get amount(): BigInt {
@@ -1252,7 +1401,7 @@ export class SetSalesPriceCall__Inputs {
     this._call = call;
   }
 
-  get tokenId(): BigInt {
+  get ticketId(): BigInt {
     return this._call.inputValues[0].value.toBigInt();
   }
 
@@ -1269,36 +1418,6 @@ export class SetSalesPriceCall__Outputs {
   _call: SetSalesPriceCall;
 
   constructor(call: SetSalesPriceCall) {
-    this._call = call;
-  }
-}
-
-export class SetURICall extends ethereum.Call {
-  get inputs(): SetURICall__Inputs {
-    return new SetURICall__Inputs(this);
-  }
-
-  get outputs(): SetURICall__Outputs {
-    return new SetURICall__Outputs(this);
-  }
-}
-
-export class SetURICall__Inputs {
-  _call: SetURICall;
-
-  constructor(call: SetURICall) {
-    this._call = call;
-  }
-
-  get newuri(): string {
-    return this._call.inputValues[0].value.toString();
-  }
-}
-
-export class SetURICall__Outputs {
-  _call: SetURICall;
-
-  constructor(call: SetURICall) {
     this._call = call;
   }
 }

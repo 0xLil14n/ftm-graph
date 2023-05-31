@@ -1,19 +1,30 @@
+type Event @entity {
+  id: ID! # eventId for GA should be the ticketId
+  eventOwner: User! #address
+  date: String!
+  eventName: String!
+  venueName: String!
+  listings: [Listing!]! @derivedFrom(field: "event")
+}
+
 type Listing @entity {
   id: ID!
   priceInWei: BigInt!
   listedBy: User!
   supplyLeft: BigInt!
   ticketId: BigInt!
+  event: Event
 }
 
 type User @entity {
   id: ID!
   tickets: [Ticket!]!
+  listings: [Listing!] @derivedFrom(field: "listedBy")
 }
 type Ticket @entity {
   id: ID!
   ticketId: BigInt!
-  quantity: BigInt!
+  owner: User!
 }
 
 type TicketOption @entity {
@@ -47,8 +58,7 @@ type TicketResold @entity(immutable: true) {
 type TicketSold @entity(immutable: true) {
   id: Bytes!
   owner: Bytes! # address
-  tokenId: BigInt! # uint256
-  ticketId: String! # string
+  ticketId: BigInt! # uint256
   quantity: BigInt! # uint256
   blockNumber: BigInt!
   blockTimestamp: BigInt!

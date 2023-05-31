@@ -11,6 +11,107 @@ import {
   BigDecimal
 } from "@graphprotocol/graph-ts";
 
+export class Event extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Event entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type Event must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("Event", id.toString(), this);
+    }
+  }
+
+  static loadInBlock(id: string): Event | null {
+    return changetype<Event | null>(store.get_in_block("Event", id));
+  }
+
+  static load(id: string): Event | null {
+    return changetype<Event | null>(store.get("Event", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get eventOwner(): string {
+    let value = this.get("eventOwner");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set eventOwner(value: string) {
+    this.set("eventOwner", Value.fromString(value));
+  }
+
+  get date(): string {
+    let value = this.get("date");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set date(value: string) {
+    this.set("date", Value.fromString(value));
+  }
+
+  get eventName(): string {
+    let value = this.get("eventName");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set eventName(value: string) {
+    this.set("eventName", Value.fromString(value));
+  }
+
+  get venueName(): string {
+    let value = this.get("venueName");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set venueName(value: string) {
+    this.set("venueName", Value.fromString(value));
+  }
+
+  get listings(): Array<string> {
+    let value = this.get("listings");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toStringArray();
+    }
+  }
+}
+
 export class Listing extends Entity {
   constructor(id: string) {
     super();
@@ -101,6 +202,23 @@ export class Listing extends Entity {
   set ticketId(value: BigInt) {
     this.set("ticketId", Value.fromBigInt(value));
   }
+
+  get event(): string | null {
+    let value = this.get("event");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set event(value: string | null) {
+    if (!value) {
+      this.unset("event");
+    } else {
+      this.set("event", Value.fromString(<string>value));
+    }
+  }
 }
 
 export class User extends Entity {
@@ -153,6 +271,15 @@ export class User extends Entity {
 
   set tickets(value: Array<string>) {
     this.set("tickets", Value.fromStringArray(value));
+  }
+
+  get listings(): Array<string> | null {
+    let value = this.get("listings");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
   }
 }
 
@@ -208,17 +335,17 @@ export class Ticket extends Entity {
     this.set("ticketId", Value.fromBigInt(value));
   }
 
-  get quantity(): BigInt {
-    let value = this.get("quantity");
+  get owner(): string {
+    let value = this.get("owner");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
-      return value.toBigInt();
+      return value.toString();
     }
   }
 
-  set quantity(value: BigInt) {
-    this.set("quantity", Value.fromBigInt(value));
+  set owner(value: string) {
+    this.set("owner", Value.fromString(value));
   }
 }
 
@@ -616,8 +743,8 @@ export class TicketSold extends Entity {
     this.set("owner", Value.fromBytes(value));
   }
 
-  get tokenId(): BigInt {
-    let value = this.get("tokenId");
+  get ticketId(): BigInt {
+    let value = this.get("ticketId");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -625,21 +752,8 @@ export class TicketSold extends Entity {
     }
   }
 
-  set tokenId(value: BigInt) {
-    this.set("tokenId", Value.fromBigInt(value));
-  }
-
-  get ticketId(): string {
-    let value = this.get("ticketId");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toString();
-    }
-  }
-
-  set ticketId(value: string) {
-    this.set("ticketId", Value.fromString(value));
+  set ticketId(value: BigInt) {
+    this.set("ticketId", Value.fromBigInt(value));
   }
 
   get quantity(): BigInt {

@@ -6,7 +6,7 @@ dataSources:
     name: FuckTicketmaster
     network: sepolia
     source:
-      address: '0x3eEe9c05b10FE7b9339784082a4C42d4575bA5e2'
+      address: '0x0011722ac42885cca029e978aDBb63caBA6BcBAE'
       abi: FuckTicketmaster
       startBlock: 3563974
     mapping:
@@ -19,6 +19,8 @@ dataSources:
         - TicketSold
         - User
         - TicketOption
+        - Event
+        - Listing
       abis:
         - name: FuckTicketmaster
           file: ./abis/FuckTicketmaster.json
@@ -27,8 +29,10 @@ dataSources:
           handler: handleRoyaltyDisbursed
         - event: TicketResold(indexed address,indexed address,indexed uint256,uint256)
           handler: handleTicketResold
-        - event: TicketSold(indexed address,uint256,indexed string,uint256)
+        - event: TicketSold(indexed address,uint256,uint256)
           handler: handleTicketSold
         - event: TokenListedForSale(indexed address,indexed uint256,uint256,uint256)
           handler: handleTokenListedForSale
+        - event: TicketCreated(indexed uint256,indexed address,uint256,uint256,string,string,string)
+          handler: handleTicketCreated
       file: ./src/fuck-ticketmaster.ts
