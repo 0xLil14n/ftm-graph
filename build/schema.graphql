@@ -5,6 +5,14 @@ type Event @entity {
   eventName: String!
   venueName: String!
   listings: [Listing!]! @derivedFrom(field: "event")
+  presale: Presale @derivedFrom(field: "event")
+}
+type Presale @entity {
+  id: ID! # same as event ID
+  startTime: BigInt!
+  endTime: BigInt!
+  event: Event!
+  state: Int!
 }
 
 type Listing @entity {
@@ -14,6 +22,7 @@ type Listing @entity {
   supplyLeft: BigInt!
   ticketId: BigInt!
   event: Event
+  isResale: Boolean!
 }
 
 type User @entity {

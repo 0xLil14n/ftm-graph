@@ -1,5 +1,7 @@
 import {
   FuckTicketmaster,
+  PresaleStateUpdated as PresaleStateUpdatedEvent,
+  PresaleCreated as PresaleCreatedEvent,
   RoyaltyDisbursed as RoyaltyDisbursedEvent,
   TicketCreated as TicketCreatedEvent,
   TicketResold as TicketResoldEvent,
@@ -14,6 +16,7 @@ import {
   TicketResold,
   TicketSold,
   User,
+  Presale,
 } from '../generated/schema';
 import { BigInt, log } from '@graphprotocol/graph-ts';
 
@@ -22,6 +25,8 @@ export function handleTicketCreated(event: TicketCreatedEvent): void {
   let eventOwner = User.load(event.params.owner.toHexString());
   if (!eventOwner) {
     eventOwner = new User(event.params.owner.toHexString());
+    eventOwner.tickets = [];
+    eventOwner.save();
   }
   ticketEvent.eventOwner = eventOwner.id;
   ticketEvent.date = event.params.date;
@@ -29,12 +34,15 @@ export function handleTicketCreated(event: TicketCreatedEvent): void {
   ticketEvent.venueName = event.params.venueName;
   ticketEvent.save();
 
-  let listing = new Listing(event.transaction.hash.toHexString());
+  let listing = new Listing(
+    `${event.params.owner.toHexString()}-${event.params.ticketId}`
+  );
   listing.priceInWei = event.params.priceInWei;
   listing.listedBy = eventOwner.id;
   listing.supplyLeft = event.params.ticketSupply;
   listing.ticketId = event.params.ticketId;
   listing.event = ticketEvent.id;
+  listing.isResale = false;
   listing.save();
 }
 
@@ -114,7 +122,27 @@ export function handleTicketSold(event: TicketSoldEvent): void {
     user = new User(event.params.owner.toHexString());
     user.tickets = [];
   }
-  let contract = FuckTicketmaster.bind(event.address);
+
+  const ticketEvent = Event.load(event.params.ticketId.toString());
+  if (!ticketEvent) {
+    log.error('handleTicketSold error, no ticket event found for ticketId {}', [
+      event.params.ticketId.toString(),
+    ]);
+  } else {
+    const listing = Listing.load(
+      `${ticketEvent.eventOwner}-${event.params.ticketId}`
+    );
+    if (!listing) {
+      log.error(
+        'handleTicketSold error, no listing or ticket event found for ticketId {}',
+        [event.params.ticketId.toString()]
+      );
+    } else {
+      listing.supplyLeft = FuckTicketmaster.bind(event.address).totalSupply(
+        event.params.ticketId
+      );
+    }
+  }
   let tickets = user.tickets;
   for (let i = 0; i < parseInt(event.params.quantity.toString()); i++) {
     const id = `${event.transaction.hash.toHexString()}-${i}`;
@@ -142,5 +170,49 @@ export function handleTokenListedForSale(event: TokenListedForSaleEvent): void {
   listing.listedBy = user.id;
   listing.supplyLeft = event.params.amount;
   listing.ticketId = event.params.tokenId;
+  listing.isResale = true;
+
+  const listingEvent = Event.load(event.params.tokenId.toString());
+  if (!listingEvent) {
+    log.error('no event found for a resale listing for ticketId {}', [
+      event.params.tokenId.toString(),
+    ]);
+  } else {
+    listing.event = listingEvent.id;
+  }
   listing.save();
+}
+
+export function handlePresaleCreated(event: PresaleCreatedEvent): void {
+  const eventId = event.params.eventId;
+  const ticketEvent = Event.load(eventId.toString());
+  if (!ticketEvent) {
+    log.error(
+      'HandlePresaleCreated error: No ticket event found for eventId {}',
+      [eventId.toString()]
+    );
+    return;
+  }
+  const presale = new Presale(eventId.toString());
+  presale.event = eventId.toString();
+  presale.startTime = event.params.startTime;
+  presale.endTime = event.params.endTime;
+  presale.state = 0;
+  presale.save();
+}
+
+export function handlePresaleStateUpdated(
+  event: PresaleStateUpdatedEvent
+): void {
+  const eventId = event.params.eventId.toString();
+  const presale = Presale.load(eventId);
+  if (!presale) {
+    log.error('handlePresaleStateUpdated error finding presale for event {}', [
+      eventId,
+    ]);
+    return;
+  }
+  presale.state = event.params.presaleStateAfter;
+  // log.info("Presale state for event {} updating from {} to {}", [eventId, event.params.presaleStateBefore.toString(), event.params.presaleStateAfter.toString()]);
+  presale.save();
 }

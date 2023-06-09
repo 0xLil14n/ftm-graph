@@ -110,6 +110,107 @@ export class Event extends Entity {
       return value.toStringArray();
     }
   }
+
+  get presale(): string | null {
+    let value = this.get("presale");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+}
+
+export class Presale extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Presale entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type Presale must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("Presale", id.toString(), this);
+    }
+  }
+
+  static loadInBlock(id: string): Presale | null {
+    return changetype<Presale | null>(store.get_in_block("Presale", id));
+  }
+
+  static load(id: string): Presale | null {
+    return changetype<Presale | null>(store.get("Presale", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get startTime(): BigInt {
+    let value = this.get("startTime");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set startTime(value: BigInt) {
+    this.set("startTime", Value.fromBigInt(value));
+  }
+
+  get endTime(): BigInt {
+    let value = this.get("endTime");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set endTime(value: BigInt) {
+    this.set("endTime", Value.fromBigInt(value));
+  }
+
+  get event(): string {
+    let value = this.get("event");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set event(value: string) {
+    this.set("event", Value.fromString(value));
+  }
+
+  get state(): i32 {
+    let value = this.get("state");
+    if (!value || value.kind == ValueKind.NULL) {
+      return 0;
+    } else {
+      return value.toI32();
+    }
+  }
+
+  set state(value: i32) {
+    this.set("state", Value.fromI32(value));
+  }
 }
 
 export class Listing extends Entity {
@@ -218,6 +319,19 @@ export class Listing extends Entity {
     } else {
       this.set("event", Value.fromString(<string>value));
     }
+  }
+
+  get isResale(): boolean {
+    let value = this.get("isResale");
+    if (!value || value.kind == ValueKind.NULL) {
+      return false;
+    } else {
+      return value.toBoolean();
+    }
+  }
+
+  set isResale(value: boolean) {
+    this.set("isResale", Value.fromBoolean(value));
   }
 }
 

@@ -6,7 +6,7 @@ dataSources:
     name: FuckTicketmaster
     network: sepolia
     source:
-      address: "0x0011722ac42885cca029e978aDBb63caBA6BcBAE"
+      address: "0xBb7318E3d16A17798ED864b5FC4225d5018adA22"
       abi: FuckTicketmaster
       startBlock: 3563974
     mapping:
@@ -35,4 +35,8 @@ dataSources:
           handler: handleTokenListedForSale
         - event: TicketCreated(indexed uint256,indexed address,uint256,uint256,string,string,string)
           handler: handleTicketCreated
+        - event: PresaleCreated(uint256,uint256,uint256)
+          handler: handlePresaleCreated
+        - event: PresaleStateUpdated(indexed uint256,uint8,uint8)
+          handler: handlePresaleStateUpdated
       file: FuckTicketmaster/FuckTicketmaster.wasm
