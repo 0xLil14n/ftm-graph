@@ -6,7 +6,7 @@ dataSources:
     name: FuckTicketmaster
     network: sepolia
     source:
-      address: "0xBb7318E3d16A17798ED864b5FC4225d5018adA22"
+      address: "0x54b791b6cE7b0425836CbCDE5ADa483113F6E92c"
       abi: FuckTicketmaster
       startBlock: 3563974
     mapping:
